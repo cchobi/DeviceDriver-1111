@@ -16,16 +16,16 @@ public:
 class DriverFixture : public Test {
 public:
 	FlashMock mk;
+	DeviceDriver dd{ &mk };
 };
 
 TEST_F(DriverFixture, TestReadFiveTimes) {
 	EXPECT_CALL(mk, read(0xA)).Times(5);
 
-	DeviceDriver* dd = new DeviceDriver(&mk);
-	dd->read(0xA);
+	dd.read(0xA);
 }
 
-TEST_F(DriverFixture, TestReadFiveTimesDiffValue) {
+TEST_F(DriverFixture, TestReadFiveTimesException) {
 	EXPECT_CALL(mk, read(0xA))
 		.Times(5)
 		.WillOnce(Return(1))
@@ -33,9 +33,7 @@ TEST_F(DriverFixture, TestReadFiveTimesDiffValue) {
 		.WillOnce(Return(2))
 		.WillRepeatedly(Return(1));
 
-	DeviceDriver* dd = new DeviceDriver(&mk);
-
-	EXPECT_THROW(dd->read(0xA), ReadFailException);
+	EXPECT_THROW(dd.read(0xA), ReadFailException);
 }
 
 TEST_F(DriverFixture, TestWriteOnce) {
@@ -44,15 +42,13 @@ TEST_F(DriverFixture, TestWriteOnce) {
 		.WillRepeatedly(Return(0xFF));
 	EXPECT_CALL(mk, write(0xA, 1)).Times(1);
 
-	DeviceDriver* dd = new DeviceDriver(&mk);
-	dd->write(0xA, 1);
+	dd.write(0xA, 1);
 }
 
 
-TEST_F(DriverFixture, TestWriteFail) {
+TEST_F(DriverFixture, TestWriteException) {
 	EXPECT_CALL(mk, read(0xA))
 		.WillRepeatedly(Return(0x01));
 
-	DeviceDriver* dd = new DeviceDriver(&mk);
-	EXPECT_THROW(dd->write(0xA, 1), WriteFailException);
+	EXPECT_THROW(dd.write(0xA, 1), WriteFailException);
 }

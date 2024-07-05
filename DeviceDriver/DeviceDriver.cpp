@@ -34,17 +34,16 @@ DeviceDriver::DeviceDriver(FlashMemoryDevice* hardware) : m_hardware(hardware)
 
 int DeviceDriver::read(long address)
 {
-    // TODO: implement this method properly
-
     bool isSame = true;
     int preResult = (int)(m_hardware->read(address));
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < RETRY_TEST_COUNT; i++) {
         int nowResult = (int)(m_hardware->read(address));
         if (preResult != nowResult) isSame = false;
         preResult = nowResult;
     }
 
-    if (isSame == false) throw ReadFailException("Different read value !!");
+    if (isSame == false) 
+        throw ReadFailException("Different read value !!");
 
     return preResult;
 }
@@ -52,7 +51,8 @@ int DeviceDriver::read(long address)
 void DeviceDriver::write(long address, int data)
 {
     int readValue = (int)(m_hardware->read(address));
-    if(readValue != 0xFF) throw WriteFailException("Already written!!");
+    if(readValue != 0xFF) 
+        throw WriteFailException("Already written!!");
 
     m_hardware->write(address, (unsigned char)data);
 }
